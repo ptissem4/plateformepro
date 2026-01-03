@@ -1,0 +1,7 @@
+{
+  "name": "La Plateforme Pro - Annuaire Beaujolais & Lyon Nord",
+  "description": "La Plateforme Pro est le réseau de confiance pour trouver les meilleurs artisans et professionnels audités du Beaujolais et de Lyon Nord. Plus qu'un annuaire, une garantie de qualité.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
