@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Business, Category, SubscriptionTier, Review, SortBy, Coords, AccountCreationData, View } from './types';
-import { mockBusinesses } from './data/mockData'; // Fallback only
+// import { mockBusinesses } from './data/mockData'; // SUPPRIMÉ POUR FIX NETLIFY
 import Header from './components/Header';
 import Filters from './components/Filters';
 import BusinessCard from './components/BusinessCard';
@@ -26,6 +26,387 @@ import { getAdminBusinesses, upsertBusiness, addReview, moderateReview } from '.
 
 const ADMIN_EMAIL = 'admin@plateforme.pro';
 const ADMIN_PASS = 'admin123';
+
+// --- INTEGRATION DIRECTE DES DONNÉES MOCK POUR ÉVITER LES ERREURS DE BUILD NETLIFY ---
+// Helper to get dates relative to today
+const getFutureDate = (days: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split('T')[0];
+};
+
+const getPastDate = (days: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    return date.toISOString().split('T')[0];
+};
+
+const mockBusinesses: Business[] = [
+  {
+    id: '1',
+    Nom_Entreprise: "Le Jardin Secret d'Amélie",
+    Catégorie_Secteur: [Category.Shopping, Category.Maison],
+    Localisation: "Anse",
+    Statut_Formule: SubscriptionTier.VisibiliteDefinitive,
+    Lien_Page_Pro: "https://example.com/jardin-amelie",
+    Téléphone: "04 74 12 34 56",
+    Phrase_Accroche: "L'art floral réinventé au cœur d'Anse.",
+    Logo_Photo: "https://images.unsplash.com/photo-1596627685790-9c176378e12d?w=800&h=450&fit=crop",
+    Priorité_Tri: 3,
+    Description: "Amélie, fleuriste passionnée, crée des bouquets uniques et des compositions florales pour toutes les occasions. Spécialisée dans les fleurs de saison et les ateliers d'art floral, elle apporte une touche de poésie à vos événements.\n\nServices :\n• Bouquets personnalisés\n• Décoration florale d'événements\n• Ateliers d'art floral\n• Abonnement fleurs fraîches",
+    Horaires: "Du Mardi au Samedi : 9h30-19h00\nDimanche : 9h30-12h30",
+    Adresse: "7 Rue du Clocher, 69480 Anse",
+    coordinates: { lat: 45.9367, lng: 4.7210 },
+    email: "amelie@jardinsecret.fr",
+    password: "password123",
+    facebookUrl: "https://facebook.com",
+    instagramUrl: "https://instagram.com",
+    offreDuMois: {
+        title: "-15% sur les Pivoines",
+        description: "Célébrez le printemps avec nos pivoines locales. Offre valable sur tous les bouquets du mois.",
+        image: "https://images.unsplash.com/photo-1563241527-3004b7be025f?w=400&h=300&fit=crop"
+    },
+    reviews: [
+        { id: 'r1', author: 'Sophie M.', rating: 5, comment: 'Des compositions magnifiques qui tiennent longtemps !', date: '2023-10-15', isApproved: true },
+        { id: 'r2', author: 'Lucas P.', rating: 5, comment: 'Amélie a un vrai don pour les couleurs.', date: '2023-11-02', isApproved: true },
+        { id: 'r3', author: 'Claire D.', rating: 4, comment: 'Très belle boutique, prix corrects.', date: '2023-09-20', isApproved: true },
+        { id: 'r4', author: 'Marc L.', rating: 5, comment: 'Livraison parfaite pour la fête des mères.', date: '2023-05-28', isApproved: true },
+        { id: 'r5', author: 'Julie T.', rating: 5, comment: 'Les ateliers du samedi sont géniaux.', date: '2023-12-10', isApproved: true }
+    ],
+    isApproved: true,
+    seoTitle: "Fleuriste Anse - Le Jardin Secret d'Amélie",
+    metaDescription: "Fleuriste artisan à Anse. Bouquets, mariages, ateliers. Livraison 7j/7.",
+    referralCode: "AMELIE2024",
+    referralCredit: 30,
+    paymentFrequency: 'annual',
+    subscriptionEndDate: '2024-12-31',
+    transactions: [
+        { id: 't1', date: '2024-01-01', amount: 450, description: "Abonnement Annuel - Pack Visibilité Définitive", status: 'paid' }
+    ],
+    managerName: "Amélie Poulain",
+    personalPhone: "06 11 22 33 44",
+    billingEmail: "compta@jardinsecret.fr"
+  },
+  {
+    id: '2',
+    Nom_Entreprise: "Mécano Express 24/7",
+    Catégorie_Secteur: [Category.Proximite],
+    Localisation: "Villefranche-sur-Saône",
+    Statut_Formule: SubscriptionTier.Base,
+    Lien_Page_Pro: "https://example.com/mecano-express",
+    Téléphone: "04 74 65 43 21",
+    Phrase_Accroche: "Votre garagiste de confiance, disponible à toute heure.",
+    Logo_Photo: "https://images.unsplash.com/photo-1626084257640-c75c5e884578?w=800&h=450&fit=crop",
+    Priorité_Tri: 1,
+    Description: "Garage automobile toutes marques installé à Villefranche depuis 15 ans. Nous assurons l'entretien courant, les réparations complexes et le dépannage d'urgence.\n\nServices :\n• Révision et Vidange\n• Diagnostic électronique\n• Pneumatiques\n• Dépannage 24/7",
+    Horaires: "Lundi-Vendredi : 8h00-18h00\nSamedi : 8h00-12h00",
+    Adresse: "15 Zone Industrielle Nord, 69400 Villefranche-sur-Saône",
+    coordinates: { lat: 45.9904, lng: 4.7175 },
+    email: "contact@mecano-express.fr",
+    password: "password123",
+    reviews: [
+        { id: 'r6', author: 'Pierre G.', rating: 4, comment: 'Efficace et rapide.', date: '2023-08-12', isApproved: true },
+        { id: 'r7', author: 'Nathalie B.', rating: 5, comment: 'Ils m’ont dépannée un dimanche, au top !', date: '2023-11-05', isApproved: true },
+        { id: 'r8', author: 'Thomas V.', rating: 4, comment: 'Tarifs un peu élevés mais travail sérieux.', date: '2023-10-01', isApproved: true }
+    ],
+    isApproved: true,
+    referralCode: "MECA2024",
+    referralCredit: 0,
+    paymentFrequency: 'monthly',
+    subscriptionEndDate: getFutureDate(20), // Active
+    transactions: [
+        { id: 't2', date: getPastDate(10), amount: 12, description: "Abonnement Mensuel - Base", status: 'paid' },
+        { id: 't3', date: getPastDate(40), amount: 12, description: "Abonnement Mensuel - Base", status: 'paid' }
+    ],
+    managerName: "Jean Dupont",
+    personalPhone: "06 99 88 77 66",
+    billingEmail: "jean.dupont@gmail.com"
+  },
+  {
+    id: '3',
+    Nom_Entreprise: "Boulangerie L'Épi Doré",
+    Catégorie_Secteur: [Category.Gastronomie, Category.Shopping],
+    Localisation: "Limas",
+    Statut_Formule: SubscriptionTier.VisibilitePlus,
+    Lien_Page_Pro: "https://example.com/epi-dore",
+    Téléphone: "04 74 98 76 54",
+    Phrase_Accroche: "Le goût du pain d'antan, pétri avec amour.",
+    Logo_Photo: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=450&fit=crop",
+    Priorité_Tri: 2,
+    Description: "Boulangerie artisanale privilégiant les farines locales et le levain naturel. Venez découvrir notre gamme de pains spéciaux, nos viennoiseries pur beurre et nos pâtisseries fines.\n\nServices :\n• Pains au levain\n• Pâtisserie fine\n• Snacking déjeuner\n• Commandes traiteur",
+    Horaires: "Mardi-Dimanche : 6h30-19h30",
+    Adresse: "4 Place de la République, 69400 Limas",
+    coordinates: { lat: 45.9750, lng: 4.7110 },
+    email: "commande@epidore.fr",
+    password: "password123",
+    instagramUrl: "https://instagram.com",
+    reviews: [
+        { id: 'r9', author: 'Isabelle R.', rating: 5, comment: 'La meilleure baguette tradition du coin !', date: '2023-12-15', isApproved: true },
+        { id: 'r10', author: 'Karim S.', rating: 4, comment: 'Les éclairs au chocolat sont une tuerie.', date: '2023-11-20', isApproved: true },
+        { id: 'r11', author: 'Valérie M.', rating: 5, comment: 'Toujours le sourire, ça fait plaisir.', date: '2023-10-30', isApproved: true },
+        { id: 'r12', author: 'Jean-Luc F.', rating: 4, comment: 'Victime de son succès, il y a souvent la queue !', date: '2023-09-05', isApproved: true }
+    ],
+    isApproved: true,
+    referralCode: "PAIN2024",
+    referralCredit: 10,
+    paymentFrequency: 'annual',
+    subscriptionEndDate: '2024-11-15',
+    transactions: [
+        { id: 't4', date: '2023-11-15', amount: 299, description: "Abonnement Annuel - Visibilité Plus", status: 'paid' }
+    ],
+    managerName: "Marie Blachère",
+    personalPhone: "07 65 43 21 09",
+    billingEmail: "compta@epidore.fr"
+  },
+  {
+    id: '4',
+    Nom_Entreprise: "Au Bon Vivant",
+    Catégorie_Secteur: [Category.Gastronomie, Category.Loisirs],
+    Localisation: "Belleville-en-Beaujolais",
+    Statut_Formule: SubscriptionTier.VisibiliteDefinitive,
+    Lien_Page_Pro: "https://example.com/au-bon-vivant",
+    Téléphone: "04 74 11 22 33",
+    Phrase_Accroche: "Cuisine généreuse et vins du terroir.",
+    Logo_Photo: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=450&fit=crop",
+    Priorité_Tri: 3,
+    Description: "Véritable institution à Belleville, Au Bon Vivant vous accueille dans un cadre chaleureux pour déguster une cuisine de saison. Notre chef sublime les produits locaux, accompagné d'une carte des vins célébrant le Beaujolais.\n\nServices :\n• Menu du jour\n• Repas de groupe\n• Terrasse ombragée\n• Cave à vins",
+    Horaires: "Lundi-Samedi : 12h00-14h30, 19h00-22h30",
+    Adresse: "12 Rue de la Poste, 69220 Belleville-en-Beaujolais",
+    coordinates: { lat: 46.1089, lng: 4.7479 },
+    email: "resa@aubonvivant.fr",
+    password: "password123",
+    facebookUrl: "https://facebook.com",
+    offreDuMois: {
+        title: "Apéritif Offert",
+        description: "Un Kir Royal offert pour toute réservation via la Plateforme Pro ce mois-ci.",
+        image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=300&fit=crop"
+    },
+    reviews: [
+        { id: 'r13', author: 'Bernard C.', rating: 5, comment: 'Un sans faute. La côte de bœuf est incroyable.', date: '2023-12-01', isApproved: true },
+        { id: 'r14', author: 'Sylvie A.', rating: 5, comment: 'Cadre magnifique et personnel aux petits soins.', date: '2023-11-15', isApproved: true },
+        { id: 'r15', author: 'David K.', rating: 5, comment: 'Excellent rapport qualité-prix.', date: '2023-10-10', isApproved: true },
+        { id: 'r16', author: 'Elodie P.', rating: 4, comment: 'Un peu bruyant le samedi soir, mais on y mange si bien !', date: '2023-09-25', isApproved: true }
+    ],
+    isApproved: true,
+    seoTitle: "Restaurant Belleville - Au Bon Vivant",
+    metaDescription: "Cuisine traditionnelle et vins du Beaujolais à Belleville. Réservez votre table.",
+    referralCode: "VIVANT2024",
+    referralCredit: 50,
+    paymentFrequency: 'annual',
+    subscriptionEndDate: '2025-01-01',
+    transactions: [
+        { id: 't5', date: '2024-01-01', amount: 450, description: "Abonnement Annuel - Visibilité Définitive", status: 'paid' }
+    ],
+    managerName: "Paul Bocuse Jr",
+    personalPhone: "06 00 00 00 01",
+    billingEmail: "direction@aubonvivant.fr"
+  },
+  {
+    id: '5',
+    Nom_Entreprise: "Zen & Belle",
+    Catégorie_Secteur: [Category.Sante],
+    Localisation: "Tassin-la-Demi-Lune",
+    Statut_Formule: SubscriptionTier.VisibilitePlus,
+    Lien_Page_Pro: "https://example.com/zen-et-belle",
+    Téléphone: "04 78 55 66 77",
+    Phrase_Accroche: "Votre parenthèse bien-être au quotidien.",
+    Logo_Photo: "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?w=800&h=450&fit=crop",
+    Priorité_Tri: 2,
+    Description: "Institut de beauté et spa urbain. Échappez au stress quotidien grâce à nos massages relaxants, soins du visage bio et rituels bien-être. Une équipe d'expertes à votre écoute.\n\nServices :\n• Massages du monde\n• Soins visage Bio\n• Épilations\n• Manucure",
+    Horaires: "Mardi-Samedi : 10h00-19h00\nNocturne Jeudi jusqu'à 21h",
+    Adresse: "55 Avenue de la République, 69160 Tassin-la-Demi-Lune",
+    coordinates: { lat: 45.7634, lng: 4.7613 },
+    email: "contact@zenetbelle.fr",
+    password: "password123",
+    instagramUrl: "https://instagram.com",
+    reviews: [
+        { id: 'r17', author: 'Camille R.', rating: 5, comment: 'Un moment hors du temps, merci à Léa pour le massage.', date: '2023-12-20', isApproved: true },
+        { id: 'r18', author: 'Stéphanie D.', rating: 4, comment: 'Très propre et relaxant.', date: '2023-11-08', isApproved: true },
+        { id: 'r19', author: 'Chloé M.', rating: 5, comment: 'Je suis cliente depuis 3 ans, jamais déçue.', date: '2023-10-05', isApproved: true }
+    ],
+    isApproved: true, // Should be Auto-Masked by logic due to late payment
+    referralCode: "ZEN2024",
+    referralCredit: 20,
+    paymentFrequency: 'monthly',
+    subscriptionEndDate: getPastDate(3), // ALERT: Expired 3 days ago
+    paymentStatus: 'late',
+    transactions: [
+        { id: 't6', date: getPastDate(33), amount: 30, description: "Abonnement Mensuel - Visibilité Plus", status: 'paid' },
+        { id: 't7', date: getPastDate(3), amount: 30, description: "Abonnement Mensuel - Visibilité Plus", status: 'failed' } // Failed transaction
+    ],
+    managerName: "Léa Passion",
+    personalPhone: "06 55 44 33 22",
+    billingEmail: "lea@zenetbelle.fr"
+  },
+  {
+    id: '6',
+    Nom_Entreprise: "Immo-Experts Beaujolais",
+    Catégorie_Secteur: [Category.Maison, Category.Proximite],
+    Localisation: "Anse",
+    Statut_Formule: SubscriptionTier.VisibiliteDefinitive,
+    Lien_Page_Pro: "https://example.com/immo-experts",
+    Téléphone: "04 74 88 99 00",
+    Phrase_Accroche: "L'immobilier en toute transparence.",
+    Logo_Photo: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=450&fit=crop",
+    Priorité_Tri: 3,
+    Description: "Agence immobilière indépendante spécialisée sur le secteur des Pierres Dorées. Achat, vente, location ou gestion locative, nous vous accompagnons avec expertise et bienveillance.\n\nServices :\n• Estimation offerte\n• Transaction immobilière\n• Gestion locative\n• Viager",
+    Horaires: "Lundi-Samedi : 9h00-12h00, 14h00-18h00",
+    Adresse: "2 Place de la Mairie, 69480 Anse",
+    coordinates: { lat: 45.9367, lng: 4.7210 },
+    email: "contact@immo-experts.fr",
+    password: "password123",
+    facebookUrl: "https://facebook.com",
+    reviews: [
+        { id: 'r20', author: 'M. et Mme Dupont', rating: 5, comment: 'Maison vendue en 2 semaines au prix estimé !', date: '2023-09-10', isApproved: true },
+        { id: 'r21', author: 'Aurélien F.', rating: 4, comment: 'Très bons conseils pour mon premier investissement.', date: '2023-08-22', isApproved: true },
+        { id: 'r22', author: 'Lucie H.', rating: 5, comment: 'Équipe dynamique et réactive.', date: '2023-07-15', isApproved: true }
+    ],
+    isApproved: true,
+    seoTitle: "Agence Immobilière Anse - Immo-Experts",
+    metaDescription: "Agence immobilière à Anse. Spécialiste Pierres Dorées. Vente, achat, location.",
+    referralCode: "IMMOEXPERT",
+    referralCredit: 100,
+    paymentFrequency: 'annual',
+    subscriptionEndDate: '2024-09-30',
+    transactions: [],
+    managerName: "Stéphane Plaza",
+    personalPhone: "06 12 12 12 12",
+    billingEmail: "stephane@immo.fr"
+  },
+  {
+    id: '7',
+    Nom_Entreprise: "Tech-Assist",
+    Catégorie_Secteur: [Category.Proximite, Category.Maison],
+    Localisation: "Lyon",
+    Statut_Formule: SubscriptionTier.Base,
+    Lien_Page_Pro: "https://example.com/tech-assist",
+    Téléphone: "06 12 34 56 78",
+    Phrase_Accroche: "Dépannage informatique à domicile.",
+    Logo_Photo: "https://images.unsplash.com/photo-1597872250969-955681985396?w=800&h=450&fit=crop",
+    Priorité_Tri: 1,
+    Description: "Intervention rapide pour tous vos problèmes informatiques sur Lyon et alentours. PC, Mac, smartphones. Configuration réseau, récupération de données et formation.\n\nServices :\n• Dépannage PC/Mac\n• Récupération de données\n• Installation Box & Réseau\n• Cours d'informatique",
+    Horaires: "Lundi-Samedi : 8h00-20h00",
+    Adresse: "Intervention à Domicile - Lyon et Nord",
+    coordinates: { lat: 45.7640, lng: 4.8357 },
+    email: "support@tech-assist.fr",
+    password: "password123",
+    reviews: [
+        { id: 'r23', author: 'Gérard L.', rating: 4, comment: 'A sauvé toutes mes photos de vacances !', date: '2023-11-12', isApproved: true },
+        { id: 'r24', author: 'Monique P.', rating: 4, comment: 'Très pédagogue, je recommande.', date: '2023-10-05', isApproved: true }
+    ],
+    isApproved: true,
+    referralCode: "TECH24",
+    referralCredit: 0,
+    paymentFrequency: 'annual',
+    subscriptionEndDate: getFutureDate(10), // ALERT: Expires in 10 days
+    transactions: [
+        { id: 't8', date: getPastDate(355), amount: 120, description: "Abonnement Annuel - Base", status: 'paid' }
+    ],
+    managerName: "Bill Gates",
+    personalPhone: "06 01 01 01 01",
+    billingEmail: "bill@microsoft.com"
+  },
+  {
+    id: '8',
+    Nom_Entreprise: "La Cave des Pierres Dorées",
+    Catégorie_Secteur: [Category.Gastronomie, Category.Shopping],
+    Localisation: "Trévoux",
+    Statut_Formule: SubscriptionTier.VisibilitePlus,
+    Lien_Page_Pro: "https://example.com/la-cave",
+    Téléphone: "04 74 00 11 22",
+    Phrase_Accroche: "Vins fins, spiritueux et conseils d'expert.",
+    Logo_Photo: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=800&h=450&fit=crop",
+    Priorité_Tri: 2,
+    Description: "Caviste indépendant proposant une large sélection de vins de propriétaires, whiskies, rhums et bières artisanales. Dégustations régulières et coffrets cadeaux sur mesure.\n\nServices :\n• Vins & Spiritueux\n• Soirées dégustation\n• Location de tireuse à bière\n• Coffrets cadeaux",
+    Horaires: "Mardi-Samedi : 9h30-12h30, 15h00-19h30",
+    Adresse: "10 Quai de la Saône, 01600 Trévoux",
+    coordinates: { lat: 45.9416, lng: 4.7758 },
+    email: "contact@lacavepd.fr",
+    password: "password123",
+    facebookUrl: "https://facebook.com",
+    reviews: [
+        { id: 'r25', author: 'Antoine D.', rating: 5, comment: 'Une sélection incroyable de rhums !', date: '2023-12-05', isApproved: true },
+        { id: 'r26', author: 'Béatrice F.', rating: 5, comment: 'Le patron connaît ses produits sur le bout des doigts.', date: '2023-11-18', isApproved: true },
+        { id: 'r27', author: 'Sébastien L.', rating: 4, comment: 'Belle boutique.', date: '2023-10-22', isApproved: true }
+    ],
+    isApproved: true,
+    referralCode: "VIN2024",
+    referralCredit: 10,
+    paymentFrequency: 'annual',
+    subscriptionEndDate: '2024-10-20',
+    transactions: [],
+    managerName: "Bacchus",
+    personalPhone: "06 69 69 69 69",
+    billingEmail: "vin@cave.fr"
+  },
+  {
+    id: '9',
+    Nom_Entreprise: "Rénov'Toit",
+    Catégorie_Secteur: [Category.Maison],
+    Localisation: "Villefranche-sur-Saône",
+    Statut_Formule: SubscriptionTier.VisibiliteDefinitive,
+    Lien_Page_Pro: "https://example.com/renov-toit",
+    Téléphone: "06 99 88 77 66",
+    Phrase_Accroche: "L'expertise couverture et zinguerie en Calade.",
+    Logo_Photo: "https://images.unsplash.com/photo-1629131666728-115383921503?w=800&h=450&fit=crop",
+    Priorité_Tri: 3,
+    Description: "Artisan couvreur-zingueur certifié RGE. Nous réalisons tous vos travaux de toiture : rénovation, étanchéité, pose de velux et isolation des combles. Travail soigné et garantie décennale.\n\nServices :\n• Rénovation de toiture\n• Zinguerie\n• Isolation des combles\n• Pose de Velux",
+    Horaires: "Lundi-Vendredi : 7h30-18h00",
+    Adresse: "8 Rue de l'Industrie, 69400 Villefranche-sur-Saône",
+    coordinates: { lat: 45.9904, lng: 4.7175 },
+    email: "devis@renovtoit.fr",
+    password: "password123",
+    reviews: [
+        { id: 'r28', author: 'Famille Martin', rating: 5, comment: 'Chantier laissé propre tous les soirs, très pro.', date: '2023-09-30', isApproved: true },
+        { id: 'r29', author: 'Eric Z.', rating: 5, comment: 'Fuite réparée en urgence sous la pluie, merci !', date: '2023-11-10', isApproved: true },
+        { id: 'r30', author: 'Paul A.', rating: 5, comment: 'Devis respecté, pas de surprise.', date: '2023-08-05', isApproved: true }
+    ],
+    isApproved: true,
+    seoTitle: "Couvreur Villefranche - Rénov'Toit",
+    metaDescription: "Artisan couvreur zingueur à Villefranche. Rénovation toiture, isolation, fuite. Devis gratuit.",
+    referralCode: "TOIT69",
+    referralCredit: 40,
+    paymentFrequency: 'annual',
+    subscriptionEndDate: '2025-02-15',
+    transactions: [],
+    managerName: "Bob le Bricoleur",
+    personalPhone: "06 88 88 88 88",
+    billingEmail: "bob@renov.fr"
+  },
+  {
+    id: '10',
+    Nom_Entreprise: "Les Ciseaux de Marie",
+    Catégorie_Secteur: [Category.Sante, Category.Shopping],
+    Localisation: "Limas",
+    Statut_Formule: SubscriptionTier.Base,
+    Lien_Page_Pro: "https://example.com/ciseaux-marie",
+    Téléphone: "04 74 22 33 44",
+    Phrase_Accroche: "Coiffure mixte et visagiste.",
+    Logo_Photo: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&h=450&fit=crop",
+    Priorité_Tri: 1,
+    Description: "Salon de coiffure convivial pour hommes, femmes et enfants. Marie et son équipe vous conseillent pour trouver la coupe et la couleur qui vous correspondent. Utilisation de produits naturels.\n\nServices :\n• Coupe & Brushing\n• Coloration végétale\n• Barbier\n• Chignons mariée",
+    Horaires: "Mardi-Samedi : 9h30-18h00",
+    Adresse: "30 Rue du Centre, 69400 Limas",
+    coordinates: { lat: 45.9750, lng: 4.7110 },
+    email: "rdv@ciseauxmarie.fr",
+    password: "password123",
+    facebookUrl: "https://facebook.com",
+    reviews: [
+        { id: 'r31', author: 'Alice V.', rating: 4, comment: 'Très satisfaite de ma couleur.', date: '2023-12-02', isApproved: true },
+        { id: 'r32', author: 'Hugo B.', rating: 5, comment: 'Coupe homme nickel, rapide et pas cher.', date: '2023-11-14', isApproved: true }
+    ],
+    isApproved: true,
+    referralCode: "COIF24",
+    referralCredit: 0,
+    paymentFrequency: 'monthly',
+    subscriptionEndDate: '2024-05-30',
+    transactions: [],
+    managerName: "Marie Curie",
+    personalPhone: "06 77 77 77 77",
+    billingEmail: "marie@coiffure.fr"
+  }
+];
+// ----------------------------------------------------
 
 const App: React.FC = () => {
   // Initialiser avec un tableau vide, on chargera les données via useEffect
