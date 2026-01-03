@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Business, Category, SubscriptionTier, Review, SortBy, Coords, AccountCreationData, View } from './types';
 import { mockBusinesses } from './data/mockData'; // Fallback only
